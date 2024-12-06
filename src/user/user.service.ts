@@ -19,4 +19,8 @@ export class UserService {
 
     return this.usersRepository.save(user);
   }
+
+  async getUserByPhone(phone: string): Promise<User> {
+    return await this.usersRepository.findOne({ where: { phone: phone } });
+  }
 }
