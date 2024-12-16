@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
-import { ProfileController } from './profile/profile.controller';
 import { ProfileModule } from './profile/profile.module';
 
 @Module({

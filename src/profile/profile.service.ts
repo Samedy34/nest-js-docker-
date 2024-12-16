@@ -25,7 +25,7 @@ export class ProfileService {
     if (!profile) {
       return await this.createProfile(user);
     }
-
+    console.log(profile);
     return profile;
   }
 

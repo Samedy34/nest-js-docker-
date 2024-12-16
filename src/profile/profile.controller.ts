@@ -2,8 +2,9 @@ import { Controller, Get, UseGuards, Request, Post } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { Profile } from './profile.entity';
 import { LocalAuthGuard } from '../auth/local-auth.guard';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger';
 import { AuthDto } from '../auth/auth.local.dto';
+import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 
 @ApiTags('profile')
 @Controller('profile')
@@ -16,10 +17,11 @@ export class ProfileController {
     description: 'The user was successfully retrieved.',
     type: Profile,
   })
-  @ApiBody({ type: AuthDto })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('getProfile')
-  @UseGuards(LocalAuthGuard)
-  myProfile(@Request() request): Promise<Profile> {
+  myProfile(@Request() request: any): Promise<Profile> {
+    console.log(request);
     return this.profileService.getProfileByUser(request.user);
   }
 }
