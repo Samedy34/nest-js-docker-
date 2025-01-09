@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
+import { join } from 'path';
+import * as express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
@@ -17,6 +18,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document); // Доступ к Swagger UI по URL: /api
 
+  app.use('/qrcodes', express.static(join(__dirname, '../qrcodes')));
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

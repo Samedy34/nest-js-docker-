@@ -5,6 +5,10 @@ import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
 import {JwtAuthGuard} from "./auth/jwt-auth.guard";
 import {AuthRefreshDto} from "./auth/auth.refresh.dto";
+import {QrCodeLinkDto} from "./dto/qr-code-link.dto";
+import * as QRCode from 'qrcode';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @ApiTags('auth')
 @Controller()
@@ -51,5 +55,36 @@ export class AppController {
   @Get('user')
   getUser(@Request() req: any) {
     return req.user;
+  }
+
+  @ApiOperation({ summary: 'Generate QR Code' })
+  @ApiResponse({
+    status: 200,
+    description: 'Generated QR code in base64.',
+  })
+  @ApiBody({ type: QrCodeLinkDto })
+  @Post('qrcode')
+  async qrcode(@Body('link') link: string) {
+    try {
+      // Путь для сохранения файла
+      const fileName = `${Date.now()}.png`;
+      const filePath = path.join(__dirname, '../qrcodes', fileName);
+
+      // Создаем папку, если ее нет
+      if (!fs.existsSync(path.dirname(filePath))) {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      }
+
+      // Генерация и сохранение QR-кода
+      await QRCode.toFile(filePath, link);
+
+      // Формирование абсолютной ссылки
+      const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+      const fileUrl = `${baseUrl}/qrcodes/${fileName}`;
+
+      return { message: 'QR-код успешно создан', fileUrl };
+    } catch (error) {
+      throw new Error(`Ошибка генерации QR-кода: ${error.message}`);
+    }
   }
 }
