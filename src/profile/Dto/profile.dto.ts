@@ -1,13 +1,30 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Profile } from '../profile.entity';
 
 export class ProfileDto {
-  constructor(vkLink?: string| null, igLink?: string | null) {
-    this.vkLink = vkLink;
-    this.igLink = igLink;
+  constructor(profile: Profile) {
+    this.dikidiLink = profile.dikidiLink;
+    this.igLink = profile.igLink;
+    this.vkLink = profile.vkLink;
+    this.tg = profile.tg;
+    this.whatsApp = profile.whatsApp;
+    this.phone = profile.phone;
   }
-  @ApiProperty()
-  vkLink: string;
+  @ApiProperty({ required: false })
+  vkLink?: string;
 
-  @ApiProperty()
-  igLink: string;
+  @ApiProperty({ required: false })
+  igLink?: string;
+
+  @ApiProperty({ required: false })
+  dikidiLink?: string;
+
+  @ApiProperty({ required: false })
+  tg?: string;
+
+  @ApiProperty({ required: false })
+  whatsApp?: string;
+
+  @ApiProperty({ required: false })
+  phone?: string;
 }

@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 
 @Entity('profile')
@@ -15,4 +21,16 @@ export class Profile {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   igLink: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  dikidiLink: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  tg: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  whatsApp: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  phone: string;
 }

@@ -1,10 +1,14 @@
-import {Body, Controller, Get, Post, Put, Request, UseGuards} from '@nestjs/common';
-import {ProfileService} from './profile.service';
-import {Profile} from './profile.entity';
-import {ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger';
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
-import {ProfileDto} from "./Dto/profile.dto";
-import {AuthRefreshDto} from "../auth/auth.refresh.dto";
+import { Body, Controller, Get, Put, Request, UseGuards } from '@nestjs/common';
+import { ProfileService } from './profile.service';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ProfileDto } from './Dto/profile.dto';
 
 @ApiTags('profile')
 @Controller('profile')
@@ -23,7 +27,7 @@ export class ProfileController {
   async myProfile(@Request() request: any): Promise<ProfileDto> {
     const profile = await this.profileService.getProfileByUser(request.user);
 
-    return new ProfileDto(profile.vkLink, profile.igLink);
+    return new ProfileDto(profile);
   }
 
   @ApiOperation({ summary: 'Set profile' })
@@ -36,14 +40,21 @@ export class ProfileController {
   @ApiBody({ type: ProfileDto })
   @UseGuards(JwtAuthGuard)
   @Put('setProfile')
-  async setProfile(@Request() request: any, @Body() body: ProfileDto): Promise<ProfileDto> {
+  async setProfile(
+    @Request() request: any,
+    @Body() body: ProfileDto,
+  ): Promise<ProfileDto> {
     const profile = await this.profileService.getProfileByUser(request.user);
 
     profile.vkLink = body.vkLink;
     profile.igLink = body.igLink;
+    profile.dikidiLink = body.dikidiLink;
+    profile.whatsApp = body.whatsApp;
+    profile.tg = body.tg;
+    profile.phone = body.phone;
 
     await this.profileService.saveProfile(profile);
 
-    return new ProfileDto(profile.vkLink, profile.igLink);
+    return new ProfileDto(profile);
   }
 }
