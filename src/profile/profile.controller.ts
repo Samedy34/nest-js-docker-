@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Put, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import {
   ApiBearerAuth,
@@ -9,11 +17,15 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ProfileDto } from './Dto/profile.dto';
+import { UserService } from '../user/user.service';
 
 @ApiTags('profile')
 @Controller('profile')
 export class ProfileController {
-  constructor(private readonly profileService: ProfileService) {}
+  constructor(
+    private readonly profileService: ProfileService,
+    private readonly userService: UserService,
+  ) {}
 
   @ApiOperation({ summary: 'Get profile' })
   @ApiResponse({
@@ -54,6 +66,22 @@ export class ProfileController {
     profile.phone = body.phone;
 
     await this.profileService.saveProfile(profile);
+
+    return new ProfileDto(profile);
+  }
+
+  @ApiOperation({ summary: 'Get profile by id' })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile',
+    type: ProfileDto,
+  })
+  @Get('getByUserId/:userId')
+  async getProfileByUserId(
+    @Param('userId') userId: number,
+  ): Promise<ProfileDto> {
+    const user = await this.userService.getUserById(+userId);
+    const profile = await this.profileService.getProfileByUser(user);
 
     return new ProfileDto(profile);
   }

@@ -19,6 +19,8 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document); // Доступ к Swagger UI по URL: /api
 
   app.use('/qrcodes', express.static(join(__dirname, '../qrcodes')));
+  app.use('/cards', express.static(join(__dirname, '../cards')));
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

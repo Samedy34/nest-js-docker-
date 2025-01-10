@@ -1,11 +1,24 @@
-import {Controller, Post, UseGuards, Request, Get, Body} from '@nestjs/common';
-import {ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Request,
+  Get,
+  Body,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthDto } from './auth/auth.local.dto';
 import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
-import {JwtAuthGuard} from "./auth/jwt-auth.guard";
-import {AuthRefreshDto} from "./auth/auth.refresh.dto";
-import {QrCodeLinkDto} from "./dto/qr-code-link.dto";
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { AuthRefreshDto } from './auth/auth.refresh.dto';
+import { QrCodeLinkDto } from './dto/qr-code-link.dto';
 import * as QRCode from 'qrcode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -46,7 +59,7 @@ export class AppController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get user' })
+  @ApiOperation({ summary: 'Get user', tags: ['users'] })
   @ApiResponse({
     status: 200,
     description: 'Get User.',
@@ -57,7 +70,7 @@ export class AppController {
     return req.user;
   }
 
-  @ApiOperation({ summary: 'Generate QR Code' })
+  @ApiOperation({ summary: 'Generate QR Code', tags: ['services'] })
   @ApiResponse({
     status: 200,
     description: 'Generated QR code in base64.',
@@ -85,6 +98,56 @@ export class AppController {
       return { message: 'QR-код успешно создан', fileUrl };
     } catch (error) {
       throw new Error(`Ошибка генерации QR-кода: ${error.message}`);
+    }
+  }
+
+  @ApiOperation({ summary: 'Generate Card', tags: ['services'] })
+  @ApiResponse({
+    status: 200,
+    description: 'Generate business card and return file URL',
+  })
+  @Get('cards')
+  async getCard(): Promise<{ url: string }> {
+    try {
+      const templatePath = path.join(__dirname, '../template.svg');
+
+      // Чтение SVG-шаблона
+      let svgTemplate = fs.readFileSync(templatePath, 'utf8');
+
+      // Генерация QR-кода в формате SVG
+      const qrCodeSvg = await QRCode.toString('https://example.com/contact', {
+        type: 'svg',
+      });
+
+      // Замена плейсхолдеров
+      svgTemplate = svgTemplate
+        .replace('{{name}}', 'John Doe')
+        .replace('{{jobTitle}}', 'Software Developer')
+        .replace('{{phone}}', '+1 123-456-7890')
+        .replace('{{email}}', 'johndoe@example.com')
+        .replace('{{qrcode}}', qrCodeSvg);
+
+      // Директория для сохранения карты
+      const cardsDir = path.join(__dirname, '../cards');
+      if (!fs.existsSync(cardsDir)) {
+        fs.mkdirSync(cardsDir, { recursive: true });
+      }
+
+      // Имя и путь файла
+      const fileName = `${Date.now()}.svg`;
+      const filePath = path.join(cardsDir, fileName);
+
+      // Сохранение SVG на диск
+      fs.writeFileSync(filePath, svgTemplate);
+
+      // Возвращение ссылки
+      const baseUrl = 'http://localhost:3000/cards'; // Замените на ваш реальный URL
+      const fileUrl = `${baseUrl}/${fileName}`;
+
+      return { url: fileUrl };
+    } catch (error) {
+      console.error('Ошибка при создании визитки:', error);
+      throw new Error('Не удалось создать визитку');
     }
   }
 }
