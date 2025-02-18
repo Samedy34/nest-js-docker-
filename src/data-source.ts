@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
-import { User } from './user/user.entity';
-import { Profile } from './profile/profile.entity'; // Укажите путь к вашим сущностям
+import { User } from './modules/user/user.entity';
+import { Profile } from './modules/profile/profile.entity'; // Укажите путь к вашим сущностям
 
 const dataSource = new DataSource({
   type: 'postgres',

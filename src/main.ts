@@ -16,11 +16,11 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document); // Доступ к Swagger UI по URL: /api
+  SwaggerModule.setup('api', app, document);
 
   app.use('/qrcodes', express.static(join(__dirname, '../qrcodes')));
   app.use('/cards', express.static(join(__dirname, '../cards')));
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.APP_PORT);
 }
 bootstrap();

@@ -13,11 +13,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthDto } from './auth/auth.local.dto';
-import { LocalAuthGuard } from './auth/local-auth.guard';
-import { AuthService } from './auth/auth.service';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { AuthRefreshDto } from './auth/auth.refresh.dto';
+import { AuthDto } from './modules/auth/auth.local.dto';
+import { LocalAuthGuard } from './modules/auth/local-auth.guard';
+import { AuthService } from './modules/auth/auth.service';
+import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
+import { AuthRefreshDto } from './modules/auth/auth.refresh.dto';
 import { QrCodeLinkDto } from './dto/qr-code-link.dto';
 import * as QRCode from 'qrcode';
 import * as fs from 'fs';
@@ -79,19 +79,15 @@ export class AppController {
   @Post('qrcode')
   async qrcode(@Body('link') link: string) {
     try {
-      // Путь для сохранения файла
       const fileName = `${Date.now()}.png`;
       const filePath = path.join(__dirname, '../qrcodes', fileName);
 
-      // Создаем папку, если ее нет
       if (!fs.existsSync(path.dirname(filePath))) {
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
       }
 
-      // Генерация и сохранение QR-кода
       await QRCode.toFile(filePath, link);
 
-      // Формирование абсолютной ссылки
       const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
       const fileUrl = `${baseUrl}/qrcodes/${fileName}`;
 
@@ -111,10 +107,8 @@ export class AppController {
     try {
       const templatePath = path.join(__dirname, '../template.svg');
 
-      // Чтение SVG-шаблона
       let svgTemplate = fs.readFileSync(templatePath, 'utf8');
 
-      // Генерация QR-кода в формате SVG
       const qrCodeSvg = await QRCode.toString('https://example.com/contact', {
         type: 'svg',
       });
