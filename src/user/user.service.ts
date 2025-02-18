@@ -2,19 +2,27 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
+  private readonly saltRounds: number;
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.saltRounds = Number(this.configService.get('SALT_ROUNDS'));
+  }
 
-  // Метод для создания пользователя
   async createUser(phone: string, password: string): Promise<User> {
+    const hashedPassword: string = await bcrypt.hash(password, this.saltRounds);
+
     const user = this.usersRepository.create({
-      phone,
-      password,
+      phone: phone,
+      password: hashedPassword,
     });
 
     return this.usersRepository.save(user);

@@ -2,23 +2,29 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { User } from '../user/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UserService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
   ) {}
 
   // Метод для проверки пользователя (например, при логине)
   async validateUser(phone: string, pass: string): Promise<User | null> {
     const user = await this.usersService.getUserByPhone(phone);
 
-    if (user && user.password === pass) { // Добавьте хэширование паролей, если оно используется
-      return user;
+    if (!user) {
+      return null; // Пользователь не найден
     }
 
-    return null;
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+    if (!isPasswordValid) {
+      return null; // Пароль неверный
+    }
+
+    return user;
   }
 
   // Метод для авторизации (логина)
@@ -32,7 +38,9 @@ export class AuthService {
   }
 
   // Метод для обновления токенов с использованием refresh_token
-  async refreshTokens(refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
+  async refreshTokens(
+    refreshToken: string,
+  ): Promise<{ access_token: string; refresh_token: string }> {
     try {
       // Проверка валидности refresh_token
       const payload = this.jwtService.verify(refreshToken, {
@@ -47,7 +55,7 @@ export class AuthService {
       // Генерация нового access_token и refresh_token
       const newAccessToken = this.jwtService.sign(
         { username: user.phone, sub: user.id },
-        { expiresIn: '1h' } // Срок жизни нового access_token
+        { expiresIn: '1h' }, // Срок жизни нового access_token
       );
 
       const newRefreshToken = this.generateRefreshToken(user);
@@ -57,7 +65,7 @@ export class AuthService {
         refresh_token: newRefreshToken,
       };
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Invalid refresh token', error);
     }
   }
 
